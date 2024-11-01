@@ -3,13 +3,17 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 # Título de la aplicación
-st.title("Cantidad de Sismos por Año (1960-2023)")
+st.title("Visualización de Sismos (1960-2023)")
 
 # Ruta del archivo
 file_path = "CÓDIGO/Dataset_1960_2023.xlsx"
 try:
     # Cargar datos
     data = pd.read_excel(file_path, sheet_name="Catalogo1960_2023")
+    
+    # Mostrar la tabla original
+    st.write("Tabla de Datos Original:")
+    st.dataframe(data)  # Muestra la tabla completa al inicio
     
     # Extraer el año de la columna FECHA_UTC
     data['AÑO'] = data['FECHA_UTC'].astype(str).str[:4]  # Extrae los primeros 4 caracteres como año
