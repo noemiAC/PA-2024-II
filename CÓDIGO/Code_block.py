@@ -1,23 +1,33 @@
 import streamlit as st
 import pandas as pd
+import matplotlib.pyplot as plt
 
 # Título de la aplicación
-st.title("Visualización de Datos Sísmicos (1960-2023)")
+st.title("Cantidad de Sismos por Año (1960-2023)")
 
-# Cargar el archivo de Excel
+# Ruta del archivo
 file_path = "CÓDIGO/Dataset_1960_2023.xlsx"
 try:
+    # Cargar datos
     data = pd.read_excel(file_path, sheet_name="Catalogo1960_2023")
-    st.write("Datos cargados exitosamente.")
+    
+    # Extraer el año de la columna FECHA_UTC
+    data['AÑO'] = data['FECHA_UTC'].astype(str).str[:4]  # Extrae los primeros 4 caracteres como año
+    
+    # Contar la cantidad de sismos por año
+    sismos_por_año = data['AÑO'].value_counts().sort_index()
+    
+    # Mostrar tabla de cantidad de sismos por año
+    st.write("Tabla de cantidad de sismos por año:")
+    st.write(sismos_por_año)
+    
+    # Graficar la cantidad de sismos por año
+    fig, ax = plt.subplots()
+    sismos_por_año.plot(kind='bar', ax=ax, color="skyblue")
+    ax.set_xlabel("Año")
+    ax.set_ylabel("Cantidad de Sismos")
+    ax.set_title("Cantidad de Sismos por Año (1960-2023)")
+    st.pyplot(fig)
+    
 except Exception as e:
     st.error(f"Error al cargar el archivo: {e}")
-    data = None
-
-# Mostrar los datos si se cargaron correctamente
-if data is not None:
-    st.write("Vista previa de los datos:")
-    st.dataframe(data)
-
-    # Opcional: Mostrar estadísticas descriptivas
-    st.write("Estadísticas descriptivas:")
-    st.write(data.describe())
