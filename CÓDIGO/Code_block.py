@@ -25,26 +25,37 @@ try:
     st.write("Tabla de cantidad de sismos por año:")
     st.write(sismos_por_año)
     
-    # Graficar la cantidad de sismos por año con un diseño minimalista
-    fig, ax = plt.subplots(figsize=(10, 6))
-    sismos_por_año.plot(kind='bar', ax=ax, color="#00A6FB", edgecolor="none")  # Cambia a un color más brillante
+    # Crear un selectbox para elegir el tipo de gráfico
+    grafico_tipo = st.selectbox("Selecciona el tipo de gráfico", ("Gráfico de Barras", "Histograma", "Gráfico de Líneas"))
     
-    # Configuración de estilo minimalista
-    ax.set_xlabel("Año", fontsize=10, color="#444444")  # Etiqueta en el eje X con fuente más pequeña
-    ax.set_ylabel("Cantidad de Sismos", fontsize=10, color="#444444")  # Etiqueta en el eje Y con fuente más pequeña
-    ax.set_title("Cantidad de Sismos por Año (1960-2023)", fontsize=14, color="#222222")  # Título con fuente pequeña y color neutro
+    # Configuración de diseño de gráfico
+    fig, ax = plt.subplots(figsize=(10, 6))
 
-    # Cambia el estilo de los ticks y fondo
-    ax.tick_params(axis='x', labelsize=8, rotation=90, colors="#666666")  # Tamaño de letra en eje X más pequeño y color gris
-    ax.tick_params(axis='y', labelsize=8, colors="#666666")  # Tamaño de letra en eje Y más pequeño y color gris
+    # Condicional para mostrar el gráfico seleccionado
+    if grafico_tipo == "Gráfico de Barras":
+        sismos_por_año.plot(kind='bar', ax=ax, color="#00A6FB", edgecolor="none")
+        ax.set_title("Cantidad de Sismos por Año (1960-2023) - Gráfico de Barras")
+    elif grafico_tipo == "Histograma":
+        sismos_por_año.plot(kind='hist', bins=30, ax=ax, color="#FF6B6B", edgecolor="none")
+        ax.set_title("Cantidad de Sismos por Año (1960-2023) - Histograma")
+    elif grafico_tipo == "Gráfico de Líneas":
+        sismos_por_año.plot(kind='line', ax=ax, color="#1FAB89", linewidth=2)
+        ax.set_title("Cantidad de Sismos por Año (1960-2023) - Gráfico de Líneas")
+    
+    # Configuración minimalista de etiquetas
+    ax.set_xlabel("Año", fontsize=10, color="#444444")
+    ax.set_ylabel("Cantidad de Sismos", fontsize=10, color="#444444")
+    ax.tick_params(axis='x', labelsize=8, rotation=90, colors="#666666")
+    ax.tick_params(axis='y', labelsize=8, colors="#666666")
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
     ax.spines['left'].set_color("#DDDDDD")
     ax.spines['bottom'].set_color("#DDDDDD")
-    ax.set_facecolor("white")  # Fondo blanco
+    ax.set_facecolor("white")
     
-    # Mostrar la gráfica
+    # Mostrar el gráfico
     st.pyplot(fig)
     
 except Exception as e:
     st.error(f"Error al cargar el archivo: {e}")
+
