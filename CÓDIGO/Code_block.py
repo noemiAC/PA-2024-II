@@ -5,7 +5,7 @@ import pandas as pd
 st.title("Visualización de Datos Sísmicos (1960-2023)")
 
 # Cargar el archivo de Excel
-file_path = "Dataset_1960_2023.xlsx"
+file_path = "CÓDIGO/Dataset_1960_2023.xlsx"
 try:
     data = pd.read_excel(file_path, sheet_name="Catalogo1960_2023")
     st.write("Datos cargados exitosamente.")
