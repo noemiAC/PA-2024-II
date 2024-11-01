@@ -1,15 +1,23 @@
 import streamlit as st
+import pandas as pd
 
 # Título de la aplicación
-st.title("Aplicación Simple con Streamlit")
+st.title("Visualización de Datos Sísmicos (1960-2023)")
 
-# Subtítulo o descripción
-st.write("Esta es una aplicación simple que saluda al usuario.")
+# Cargar el archivo de Excel
+file_path = "Dataset_1960_2023.xlsx"
+try:
+    data = pd.read_excel(file_path, sheet_name="Catalogo1960_2023")
+    st.write("Datos cargados exitosamente.")
+except Exception as e:
+    st.error(f"Error al cargar el archivo: {e}")
+    data = None
 
-# Entrada de texto para el nombre del usuario
-nombre = st.text_input("Escribe tu nombre:")
+# Mostrar los datos si se cargaron correctamente
+if data is not None:
+    st.write("Vista previa de los datos:")
+    st.dataframe(data)
 
-# Mostrar el saludo al presionar el botón
-if st.button("Saludar"):
-    st.write(f"¡Hola, {nombre}! Bienvenido a la aplicación de Streamlit.")
-
+    # Opcional: Mostrar estadísticas descriptivas
+    st.write("Estadísticas descriptivas:")
+    st.write(data.describe())
