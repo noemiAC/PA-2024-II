@@ -11,12 +11,15 @@ try:
     # Cargar datos
     data = pd.read_excel(file_path, sheet_name="Catalogo1960_2023")
     
-    # Mostrar la tabla original
-    st.write("Tabla de Datos Original:")
+    # Convertir 'FECHA_UTC' a formato datetime completo
+    data['FECHA_UTC'] = pd.to_datetime(data['FECHA_UTC'], errors='coerce')
+
+    # Mostrar la tabla original con fechas en formato completo
+    st.write("Tabla de Datos Original (con fechas completas):")
     st.dataframe(data)  # Muestra la tabla completa al inicio
     
-    # Extraer el año de la columna FECHA_UTC
-    data['AÑO'] = data['FECHA_UTC'].astype(str).str[:4]  # Extrae los primeros 4 caracteres como año
+    # Extraer el año de la columna FECHA_UTC para el análisis
+    data['AÑO'] = data['FECHA_UTC'].dt.year.astype(str)
     
     # Contar la cantidad de sismos por año
     sismos_por_año = data['AÑO'].value_counts().sort_index()
