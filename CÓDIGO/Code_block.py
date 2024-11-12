@@ -11,8 +11,8 @@ try:
     # Cargar datos
     data = pd.read_excel(file_path, sheet_name="Catalogo1960_2023")
     
-    # Convertir la columna FECHA_CORTE en un formato de fecha
-    data['FECHA_CORTE'] = pd.to_datetime(data['FECHA_CORTE'], format='%Y%m%d').dt.strftime('%d/%m/%Y')
+    # Asegurarse de que FECHA_CORTE esté en formato string y convertirlo a fecha
+    data['FECHA_CORTE'] = pd.to_datetime(data['FECHA_CORTE'].astype(str), format='%Y%m%d').dt.strftime('%d/%m/%Y')
     
     # Mostrar la tabla original con la fecha formateada
     st.write("Tabla de Datos Original:")
