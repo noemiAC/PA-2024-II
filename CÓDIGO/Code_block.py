@@ -1,4 +1,4 @@
-# PRIMER AVANCE CÓDIGO  - Code_block                                                                                                                                                              import streamlit as st
+import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -11,28 +11,18 @@ try:
     # Cargar datos
     data = pd.read_excel(file_path, sheet_name="Catalogo1960_2023")
     
-    # Mostrar la tabla original
-    st.write("Tabla de Datos Original:")
-    st.dataframe(data)  # Muestra la tabla completa al inicio
+    # Convertir FECHA_UTC a formato de fecha (datetime)
+    data['FECHA_UTC'] = pd.to_datetime(data['FECHA_UTC'].astype(str), format='%Y%m%d')
     
-    # Extraer el año de la columna FECHA_UTC
-    data['AÑO'] = data['FECHA_UTC'].astype(str).str[:4]  # Extrae los primeros 4 caracteres como año
-
-    #---------------------------------------------
-    # Suponiendo que tienes una tabla con la columna 'FECHA_UTC'
-    data = {'FECHA_UTC': [19600101, 19701231, 19850615]}
-    df = pd.DataFrame(data)
+    # Cambiar el formato de la fecha a dd/mm/yyyy
+    data['FECHA_UTC'] = data['FECHA_UTC'].dt.strftime('%d/%m/%Y')
     
-    # Convertir FECHA_UTC a datetime
-    df['FECHA_UTC'] = pd.to_datetime(df['FECHA_UTC'], format='%Y%m%d')
+    # Mostrar la tabla con las fechas formateadas
+    st.write("Tabla de Datos Original con FECHA_UTC formateada:")
+    st.dataframe(data)
     
-    # Extraer año, mes y día como valores numéricos
-    df['AÑO'] = df['FECHA_UTC'].dt.year
-    df['MES'] = df['FECHA_UTC'].dt.month
-    df['DIA'] = df['FECHA_UTC'].dt.day
-    
-    print(df)
-    #---------------------------------------
+    # Extraer el año de la columna FECHA_UTC (ya en string)
+    data['AÑO'] = data['FECHA_UTC'].str[-4:]  # Extrae el año
     
     # Contar la cantidad de sismos por año
     sismos_por_año = data['AÑO'].value_counts().sort_index()
@@ -74,4 +64,5 @@ try:
     
 except Exception as e:
     st.error(f"Error al cargar el archivo: {e}")
+
 
