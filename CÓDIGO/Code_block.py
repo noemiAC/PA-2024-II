@@ -11,7 +11,7 @@ try:
     # Cargar datos
     data = pd.read_excel(file_path, sheet_name="Catalogo1960_2023")
     
-    # Asegurarse de que FECHA_CORTE esté en formato string y convertirlo a fecha
+    # Convertir FECHA_CORTE a tipo string y luego formatear como fecha
     data['FECHA_CORTE'] = pd.to_datetime(data['FECHA_CORTE'].astype(str), format='%Y%m%d').dt.strftime('%d/%m/%Y')
     
     # Mostrar la tabla original con la fecha formateada
@@ -38,5 +38,4 @@ try:
     
 except Exception as e:
     st.error(f"Error al cargar el archivo: {e}")
-
 
