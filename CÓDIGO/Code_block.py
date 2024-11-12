@@ -21,6 +21,32 @@ try:
     st.write("Tabla de Datos Original con FECHA_UTC formateada:")
     st.dataframe(data)
     
+    # Verificación de columnas de latitud y longitud para el mapa
+    if 'LATITUD' in data.columns and 'LONGITUD' in data.columns:
+        # Convertir a numérico para asegurarse de que no haya errores
+        data['LATITUD'] = pd.to_numeric(data['LATITUD'], errors='coerce')
+        data['LONGITUD'] = pd.to_numeric(data['LONGITUD'], errors='coerce')
+        
+        # Filtrar filas con valores válidos de latitud y longitud
+        data = data.dropna(subset=['LATITUD', 'LONGITUD'])
+        
+        # Crear el mapa centrado en una ubicación promedio de los sismos
+        m = folium.Map(location=[data['LATITUD'].mean(), data['LONGITUD'].mean()], zoom_start=5)
+
+        # Añadir marcadores al mapa para cada sismo
+        for _, row in data.iterrows():
+            folium.Marker(
+                location=[row['LATITUD'], row['LONGITUD']],
+                popup=f"Fecha: {row['FECHA_UTC']}<br>Magnitud: {row['MAGNITUD']}",
+                tooltip=row['FECHA_UTC']
+            ).add_to(m)
+
+        # Mostrar el mapa en Streamlit, debajo de la tabla de datos
+        st.write("Mapa de sismos:")
+        st_folium(m, width=700, height=500)
+    else:
+        st.error("El archivo no contiene columnas de LATITUD y LONGITUD necesarias para el mapa.")
+    
     # Extraer el año de la columna FECHA_UTC (ya en string)
     data['AÑO'] = data['FECHA_UTC'].str[-4:]  # Extrae el año
     
@@ -62,25 +88,6 @@ try:
     # Mostrar el gráfico
     st.pyplot(fig)
     
-    # Verificación de columnas de latitud y longitud para el mapa
-    if 'LATITUD' in data.columns and 'LONGITUD' in data.columns:
-        # Crear el mapa centrado en una ubicación promedio de los sismos
-        m = folium.Map(location=[data['LATITUD'].mean(), data['LONGITUD'].mean()], zoom_start=5)
-
-        # Añadir marcadores al mapa para cada sismo
-        for _, row in data.iterrows():
-            folium.Marker(
-                location=[row['LATITUD'], row['LONGITUD']],
-                popup=f"Fecha: {row['FECHA_UTC']}<br>Magnitud: {row['MAGNITUD']}",
-                tooltip=row['FECHA_UTC']
-            ).add_to(m)
-
-        # Mostrar el mapa en Streamlit
-        st.write("Mapa de sismos:")
-        st_folium(m, width=700, height=500)
-    else:
-        st.error("El archivo no contiene columnas de LATITUD y LONGITUD necesarias para el mapa.")
-
 except Exception as e:
     st.error(f"Error al cargar el archivo: {e}")
 
