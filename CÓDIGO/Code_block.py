@@ -17,6 +17,22 @@ try:
     
     # Extraer el año de la columna FECHA_UTC
     data['AÑO'] = data['FECHA_UTC'].astype(str).str[:4]  # Extrae los primeros 4 caracteres como año
+
+    #---------------------------------------------
+    # Suponiendo que tienes una tabla con la columna 'FECHA_UTC'
+    data = {'FECHA_UTC': [19600101, 19701231, 19850615]}
+    df = pd.DataFrame(data)
+    
+    # Convertir FECHA_UTC a datetime
+    df['FECHA_UTC'] = pd.to_datetime(df['FECHA_UTC'], format='%Y%m%d')
+    
+    # Extraer año, mes y día como valores numéricos
+    df['AÑO'] = df['FECHA_UTC'].dt.year
+    df['MES'] = df['FECHA_UTC'].dt.month
+    df['DIA'] = df['FECHA_UTC'].dt.day
+    
+    print(df)
+    #---------------------------------------
     
     # Contar la cantidad de sismos por año
     sismos_por_año = data['AÑO'].value_counts().sort_index()
