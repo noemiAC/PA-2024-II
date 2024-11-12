@@ -11,18 +11,18 @@ try:
     # Cargar datos
     data = pd.read_excel(file_path, sheet_name="Catalogo1960_2023")
     
-    # Convertir FECHA_UTC a formato de fecha (datetime)
+    # Convertir FECHA_UTC a formato datetime
     data['FECHA_UTC'] = pd.to_datetime(data['FECHA_UTC'].astype(str), format='%Y%m%d')
     
-    # Cambiar el formato de la fecha a dd/mm/yyyy
-    data['FECHA_UTC'] = data['FECHA_UTC'].dt.strftime('%d/%m/%Y')
+    # Cambiar el formato de la fecha a dd/mm/yyyy para mostrarlo
+    data['FECHA_UTC_str'] = data['FECHA_UTC'].dt.strftime('%d/%m/%Y')
     
     # Mostrar la tabla con las fechas formateadas
     st.write("Tabla de Datos Original con FECHA_UTC formateada:")
-    st.dataframe(data)
+    st.dataframe(data[['FECHA_UTC_str'] + [col for col in data.columns if col != 'FECHA_UTC_str']])
     
-    # Extraer el año de la columna FECHA_UTC (ya en string)
-    data['AÑO'] = data['FECHA_UTC'].str[-4:]  # Extrae el año
+    # Extraer el año de la columna FECHA_UTC
+    data['AÑO'] = data['FECHA_UTC'].dt.year
     
     # Contar la cantidad de sismos por año
     sismos_por_año = data['AÑO'].value_counts().sort_index()
@@ -42,7 +42,7 @@ try:
         sismos_por_año.plot(kind='bar', ax=ax, color="#00A6FB", edgecolor="none")
         ax.set_title("Cantidad de Sismos por Año (1960-2023) - Gráfico de Barras")
     elif grafico_tipo == "Histograma":
-        sismos_por_año.plot(kind='hist', bins=30, ax=ax, color="#FF6B6B", edgecolor="none")
+        ax.hist(data['AÑO'], bins=30, color="#FF6B6B", edgecolor="none")
         ax.set_title("Cantidad de Sismos por Año (1960-2023) - Histograma")
     elif grafico_tipo == "Gráfico de Líneas":
         sismos_por_año.plot(kind='line', ax=ax, color="#1FAB89", linewidth=2)
@@ -64,5 +64,3 @@ try:
     
 except Exception as e:
     st.error(f"Error al cargar el archivo: {e}")
-
-
