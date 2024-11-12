@@ -15,14 +15,8 @@ try:
     st.write("Tabla de Datos Original:")
     st.dataframe(data)  # Muestra la tabla completa al inicio
     
-    #----------------------------
-    # Reemplazar comas en los valores de la columna 'FECHA_UTC' para hacerlos compatibles con el formato de fecha
-    data['FECHA_UTC'] = data['FECHA_UTC'].astype(str).str.replace(",", "-")
+    data['AÑO'] = data['FECHA_UTC'].astype(str).str[:4]  # Extrae los primeros 4 caracteres como año
 
-    # Intentar convertir a formato de fecha
-    data['FECHA_UTC'] = pd.to_datetime(data['FECHA_UTC'], errors='coerce', format='%Y-%m-%d')
-    #------------------------------
-    
     # Extraer el año de la columna FECHA_UTC
     
     # Contar la cantidad de sismos por año
