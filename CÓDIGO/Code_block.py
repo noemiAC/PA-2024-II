@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
+import folium
+from streamlit_folium import st_folium
 
 # Título de la aplicación
 st.title("Visualización de Sismos (1960-2023)")
@@ -11,18 +13,16 @@ try:
     # Cargar datos
     data = pd.read_excel(file_path, sheet_name="Catalogo1960_2023")
     
-    # Convertir FECHA_UTC a formato datetime
+    # Convertir FECHA_UTC a formato de fecha (datetime)
     data['FECHA_UTC'] = pd.to_datetime(data['FECHA_UTC'].astype(str), format='%Y%m%d')
+    data['FECHA_UTC'] = data['FECHA_UTC'].dt.strftime('%d/%m/%Y')
     
-    # Cambiar el formato de la fecha a dd/mm/yyyy para mostrarlo
-    data['FECHA_UTC_str'] = data['FECHA_UTC'].dt.strftime('%d/%m/%Y')
-    
-    # Mostrar la tabla con las fechas formateadas
+    # Mostrar la tabla de datos original
     st.write("Tabla de Datos Original con FECHA_UTC formateada:")
-    st.dataframe(data[['FECHA_UTC_str'] + [col for col in data.columns if col != 'FECHA_UTC_str']])
+    st.dataframe(data)
     
-    # Extraer el año de la columna FECHA_UTC
-    data['AÑO'] = data['FECHA_UTC'].dt.year
+    # Extraer el año de la columna FECHA_UTC (ya en string)
+    data['AÑO'] = data['FECHA_UTC'].str[-4:]  # Extrae el año
     
     # Contar la cantidad de sismos por año
     sismos_por_año = data['AÑO'].value_counts().sort_index()
@@ -42,7 +42,7 @@ try:
         sismos_por_año.plot(kind='bar', ax=ax, color="#00A6FB", edgecolor="none")
         ax.set_title("Cantidad de Sismos por Año (1960-2023) - Gráfico de Barras")
     elif grafico_tipo == "Histograma":
-        ax.hist(data['AÑO'], bins=30, color="#FF6B6B", edgecolor="none")
+        sismos_por_año.plot(kind='hist', bins=30, ax=ax, color="#FF6B6B", edgecolor="none")
         ax.set_title("Cantidad de Sismos por Año (1960-2023) - Histograma")
     elif grafico_tipo == "Gráfico de Líneas":
         sismos_por_año.plot(kind='line', ax=ax, color="#1FAB89", linewidth=2)
@@ -62,5 +62,25 @@ try:
     # Mostrar el gráfico
     st.pyplot(fig)
     
+    # Verificación de columnas de latitud y longitud para el mapa
+    if 'LATITUD' in data.columns and 'LONGITUD' in data.columns:
+        # Crear el mapa centrado en una ubicación promedio de los sismos
+        m = folium.Map(location=[data['LATITUD'].mean(), data['LONGITUD'].mean()], zoom_start=5)
+
+        # Añadir marcadores al mapa para cada sismo
+        for _, row in data.iterrows():
+            folium.Marker(
+                location=[row['LATITUD'], row['LONGITUD']],
+                popup=f"Fecha: {row['FECHA_UTC']}<br>Magnitud: {row['MAGNITUD']}",
+                tooltip=row['FECHA_UTC']
+            ).add_to(m)
+
+        # Mostrar el mapa en Streamlit
+        st.write("Mapa de sismos:")
+        st_folium(m, width=700, height=500)
+    else:
+        st.error("El archivo no contiene columnas de LATITUD y LONGITUD necesarias para el mapa.")
+
 except Exception as e:
     st.error(f"Error al cargar el archivo: {e}")
+
