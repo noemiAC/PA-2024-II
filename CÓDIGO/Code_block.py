@@ -1,4 +1,5 @@
-import streamlit as st
+# PRIMER AVANCE CÓDIGO
+                                                                                                                                                            import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -11,12 +12,9 @@ try:
     # Cargar datos
     data = pd.read_excel(file_path, sheet_name="Catalogo1960_2023")
     
-    # Crear una nueva columna para la fecha de corte
-    data['FECHA_CORTE_FORMATEADA'] = pd.to_datetime(data['FECHA_CORTE'], format='%Y%m%d').dt.strftime('%d/%m/%Y')
-    
     # Mostrar la tabla original
     st.write("Tabla de Datos Original:")
-    st.dataframe(data[['ID', 'FECHA_UTC', 'HORA_UTC', 'LATITUD', 'LONGITUD', 'PROFUNDIDAD', 'MAGNITUD', 'FECHA_CORTE_FORMATEADA']])
+    st.dataframe(data)  # Muestra la tabla completa al inicio
     
     # Extraer el año de la columna FECHA_UTC
     data['AÑO'] = data['FECHA_UTC'].astype(str).str[:4]  # Extrae los primeros 4 caracteres como año
@@ -37,13 +35,13 @@ try:
     # Condicional para mostrar el gráfico seleccionado
     if grafico_tipo == "Gráfico de Barras":
         sismos_por_año.plot(kind='bar', ax=ax, color="#00A6FB", edgecolor="none")
-        ax.set_title(f"Cantidad de Sismos por Año (1960-2023) - Gráfico de Barras\nFecha de Corte: {data['FECHA_CORTE_FORMATEADA'].iloc[0]}")
+        ax.set_title("Cantidad de Sismos por Año (1960-2023) - Gráfico de Barras")
     elif grafico_tipo == "Histograma":
         sismos_por_año.plot(kind='hist', bins=30, ax=ax, color="#FF6B6B", edgecolor="none")
-        ax.set_title(f"Cantidad de Sismos por Año (1960-2023) - Histograma\nFecha de Corte: {data['FECHA_CORTE_FORMATEADA'].iloc[0]}")
+        ax.set_title("Cantidad de Sismos por Año (1960-2023) - Histograma")
     elif grafico_tipo == "Gráfico de Líneas":
         sismos_por_año.plot(kind='line', ax=ax, color="#1FAB89", linewidth=2)
-        ax.set_title(f"Cantidad de Sismos por Año (1960-2023) - Gráfico de Líneas\nFecha de Corte: {data['FECHA_CORTE_FORMATEADA'].iloc[0]}")
+        ax.set_title("Cantidad de Sismos por Año (1960-2023) - Gráfico de Líneas")
     
     # Configuración minimalista de etiquetas
     ax.set_xlabel("Año", fontsize=10, color="#444444")
@@ -61,4 +59,5 @@ try:
     
 except Exception as e:
     st.error(f"Error al cargar el archivo: {e}")
+
 
