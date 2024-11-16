@@ -4,3 +4,4 @@ openpyxl
 matplotlib
 folium
 streamlit-folium
+matplotlib.pyplot as plt
