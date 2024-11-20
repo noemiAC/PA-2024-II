@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 st.title("Visualización de Sismos (1960-2023)")
 
 # Ruta del archivo
-file_path = "CÓDIGO/Code_block/Dataset_1960_2023.xlsx"
+file_path = "CÓDIGO/Dataset_1960_2023.xlsx"
 try:
     # Cargar datos
     data = pd.read_excel(file_path)
