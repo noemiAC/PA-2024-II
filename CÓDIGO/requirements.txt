@@ -1,4 +1,3 @@
-# LIBRERIAS
 streamlit
 pandas
 openpyxl
