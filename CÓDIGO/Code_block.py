@@ -5,7 +5,7 @@ from streamlit_option_menu import option_menu
 
 
 # Cargar datos
-file_path = "Dataset_1960_2023_sismo.xlsx"
+file_path = "CÓDIGO/Dataset_1960_2023_sismo.xlsx"
 data = pd.read_excel(file_path)
 data['FECHA_UTC'] = pd.to_datetime(data['FECHA_UTC'], format='%Y%m%d', errors='coerce').dt.strftime('%Y-%m-%d')
 data['HORA_UTC'] = pd.to_datetime(data['HORA_UTC'], errors='coerce', format='%H%M%S').dt.time
