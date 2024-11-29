@@ -1,140 +1,201 @@
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
+import plotly.express as px
+from streamlit_option_menu import option_menu
 
-# Título de la aplicación
-st.title("Visualización de Sismos (1960-2023)")
 
-# Ruta del archivo
-file_path = "CÓDIGO/Dataset_1960_2023.xlsx"
-try:
-    # Cargar datos
-    data = pd.read_excel(file_path)
+# Cargar datos
+file_path = "Dataset_1960_2023_sismo.xlsx"
+data = pd.read_excel(file_path)
+data['FECHA_UTC'] = pd.to_datetime(data['FECHA_UTC'], format='%Y%m%d', errors='coerce').dt.strftime('%Y-%m-%d')
+data['HORA_UTC'] = pd.to_datetime(data['HORA_UTC'], errors='coerce', format='%H%M%S').dt.time
 
-    # Convertir FECHA_UTC al formato de fecha (YYYYMMDD -> YYYY-MM-DD) sin la hora
-    data['FECHA_UTC'] = pd.to_datetime(data['FECHA_UTC'], format='%Y%m%d', errors='coerce').dt.strftime('%Y-%m-%d')
+# Funciones de las páginas
+def home_page():
+    st.title("Catálogo Sísmico 1960 - 2023")
+    st.write("Bienvenido a la aplicación de análisis de sismos.")
 
-    # Convertir FECHA_CORTE al formato de fecha (YYYYMMDD -> YYYY-MM-DD) sin la hora
-    data['FECHA_CORTE'] = pd.to_datetime(data['FECHA_CORTE'], format='%Y%d%m', errors='coerce').dt.strftime('%Y-%d-%m')
+    # Introducción al tema
+    st.markdown("""
+    ### ¿Qué es un sismo?
+    Un sismo, también conocido como terremoto, es una vibración del terreno producida por la liberación súbita de energía acumulada en la corteza terrestre debido al movimiento de las placas tectónicas. Los sismos pueden ser leves y casi imperceptibles o devastadores, con graves consecuencias para la población y la infraestructura.
 
-    # Convertir HORA_UTC al formato de hora (horas, minutos, segundos)
-    data['HORA_UTC'] = pd.to_datetime(data['HORA_UTC'], errors='coerce', format='%H%M%S').dt.time
+    ### Importancia del monitoreo de sismos
+    - **Prevención**: El análisis de los datos sísmicos ayuda a entender las zonas de riesgo y diseñar construcciones más seguras.
+    - **Ciencia**: Proporciona información clave sobre la dinámica del planeta Tierra.
+    - **Educación**: Incrementa la conciencia pública sobre cómo actuar en caso de sismos.
 
-    
-    # Mostrar la tabla original
-    st.write("Tabla de Datos Original:")
-    st.dataframe(data)  # Muestra la tabla completa al inicio
-    
-    # Verificar si la columna 'PROFUNDIDAD' existe y filtrar por profundidad
-    if 'PROFUNDIDAD' in data.columns:
-        # Filtro de profundidad con un slider
-        profundidad_min = int(data['PROFUNDIDAD'].min())
-        profundidad_max = int(data['PROFUNDIDAD'].max())
-        
-        profundidad_filtrada = st.slider(
-            "Selecciona el rango de profundidad (km)",
-            min_value=profundidad_min, max_value=profundidad_max,
-            value=(profundidad_min, profundidad_max),
-            step=1
+    En esta aplicación, puedes explorar datos sísmicos registrados desde 1960 hasta 2023. Usa las opciones del menú para visualizar mapas, gráficos y aplicar filtros personalizados según tus intereses.
+    """)
+
+    st.image(
+        "img/sismo.png",  # Ruta relativa a la imagen
+        caption="El movimiento de la tierra nos impulsa a ser más conscientes y a valorar cada instante",
+        use_container_width=True
+    )
+
+    st.markdown("""
+    ### Recursos adicionales
+    - [Instituto Geofísico del Perú (IGP)](https://www.igp.gob.pe/)
+    - [Servicio Geológico de los Estados Unidos (USGS)](https://earthquake.usgs.gov/)
+    - [Wikipedia: Terremotos](https://es.wikipedia.org/wiki/Terremoto)
+    """)
+
+    st.info("🙌La naturaleza puede ser poderosa, pero la valentía y la solidaridad de las personas son indestructibles.🥰")
+
+def filtrado_cantidad():
+    st.title("Filtrado por Cantidad de Sismos")
+    columna = st.selectbox("Selecciona la columna para filtrar por valor único", ["ID", "PROFUNDIDAD", "MAGNITUD"])
+
+    if pd.api.types.is_numeric_dtype(data[columna]):
+        min_value = float(data[columna].min())
+        max_value = float(data[columna].max())
+        rango_min = st.number_input("Valor mínimo:", min_value=min_value, max_value=max_value, value=min_value)
+        rango_max = st.number_input("Valor máximo:", min_value=min_value, max_value=max_value, value=max_value)
+
+        if rango_min <= rango_max:
+            datos_filtrados = data[(data[columna] >= rango_min) & (data[columna] <= rango_max)]
+            st.write(f"Cantidad de sismos: {len(datos_filtrados)}")
+            st.dataframe(datos_filtrados)
+        else:
+            st.error("El valor mínimo no puede ser mayor que el máximo.")
+
+def visualizacion_anos():
+    st.title("Visualización por Años")
+    data["FECHA_UTC"] = pd.to_datetime(data["FECHA_UTC"], errors="coerce")
+    data["AÑO"] = data["FECHA_UTC"].dt.year
+    data["MES"] = data["FECHA_UTC"].dt.month
+
+    filtro_tipo = st.radio("Selecciona el tipo de filtro:", ["Por rango de años", "Por un solo año"])
+    if filtro_tipo == "Por rango de años":
+        rango_min = st.number_input("Año mínimo:", value=int(data["AÑO"].min()), step=1)
+        rango_max = st.number_input("Año máximo:", value=int(data["AÑO"].max()), step=1)
+        if rango_min <= rango_max:
+            datos_filtrados = data[(data["AÑO"] >= rango_min) & (data["AÑO"] <= rango_max)]
+            conteo_por_año = datos_filtrados["AÑO"].value_counts().sort_index()
+            fig = px.bar(conteo_por_año, x=conteo_por_año.index, y=conteo_por_año.values, labels={"x": "Año", "y": "Cantidad de Sismos"})
+            st.plotly_chart(fig)
+        else:
+            st.error("El año mínimo no puede ser mayor que el máximo.")
+    elif filtro_tipo == "Por un solo año":
+        año = st.number_input("Año:", value=int(data["AÑO"].min()), step=1)
+        datos_filtrados = data[data["AÑO"] == año]
+        conteo_por_mes = datos_filtrados["MES"].value_counts().sort_index()
+        fig = px.bar(conteo_por_mes, x=conteo_por_mes.index, y=conteo_por_mes.values, labels={"x": "Mes", "y": "Cantidad de Sismos"})
+        st.plotly_chart(fig)
+
+def visualizacion_magnitud():
+    st.title("Visualización por Magnitud")
+    filtro_tipo = st.radio("Selecciona el tipo de filtro:", ["Por rango de magnitudes", "Por magnitud única"])
+
+    if filtro_tipo == "Por rango de magnitudes":
+        magnitud_min = st.number_input("Magnitud mínima:", value=float(data["MAGNITUD"].min()), step=0.1)
+        magnitud_max = st.number_input("Magnitud máxima:", value=float(data["MAGNITUD"].max()), step=0.1)
+        if magnitud_min <= magnitud_max:
+            datos_filtrados = data[(data["MAGNITUD"] >= magnitud_min) & (data["MAGNITUD"] <= magnitud_max)]
+            conteo_por_magnitud = datos_filtrados["MAGNITUD"].value_counts().sort_index()
+            fig = px.bar(conteo_por_magnitud, x=conteo_por_magnitud.index, y=conteo_por_magnitud.values, labels={"x": "Magnitud", "y": "Cantidad de Sismos"})
+            st.plotly_chart(fig)
+        else:
+            st.error("La magnitud mínima no puede ser mayor que la máxima.")
+
+    elif filtro_tipo == "Por magnitud única":
+        magnitud = st.number_input("Ingresa una magnitud:", value=float(data["MAGNITUD"].min()), step=0.1)
+        datos_filtrados = data[data["MAGNITUD"] == magnitud]
+        if datos_filtrados.empty:
+            st.write("No se encontraron datos para la magnitud seleccionada.")
+        else:
+            st.dataframe(datos_filtrados)
+
+def visualizacion_profundidad():
+    st.title("Visualización por Profundidad")
+    filtro_tipo = st.radio("Selecciona el tipo de filtro:", ["Por rango de profundidad", "Por valor único de profundidad"])
+
+    if filtro_tipo == "Por rango de profundidad":
+        profundidad_min = st.number_input("Profundidad mínima (km):", value=float(data["PROFUNDIDAD"].min()), step=0.1)
+        profundidad_max = st.number_input("Profundidad máxima (km):", value=float(data["PROFUNDIDAD"].max()), step=0.1)
+        if profundidad_min <= profundidad_max:
+            datos_filtrados = data[(data["PROFUNDIDAD"] >= profundidad_min) & (data["PROFUNDIDAD"] <= profundidad_max)]
+            conteo_por_profundidad = datos_filtrados["PROFUNDIDAD"].value_counts().sort_index()
+            fig = px.bar(conteo_por_profundidad, x=conteo_por_profundidad.index, y=conteo_por_profundidad.values, labels={"x": "Profundidad", "y": "Cantidad de Sismos"})
+            st.plotly_chart(fig)
+        else:
+            st.error("La profundidad mínima no puede ser mayor que la máxima.")
+
+    elif filtro_tipo == "Por valor único de profundidad":
+        profundidad = st.number_input("Ingresa una profundidad (km):", value=float(data["PROFUNDIDAD"].min()), step=0.1)
+        datos_filtrados = data[data["PROFUNDIDAD"] == profundidad]
+        if datos_filtrados.empty:
+            st.write("No se encontraron datos para la profundidad seleccionada.")
+        else:
+            st.dataframe(datos_filtrados)
+
+
+
+
+
+# MENÚ - ENCABEZADO
+with st.container():
+    col1, col2 = st.columns([1, 5])
+    with col1:
+        st.image("img/logo_upch.png", width=80)  # Tamaño ajustado del logo
+    with col2:
+        # Crear el menú de navegación principal
+        selected = option_menu(
+            menu_title=None,  # Oculta el título del menú
+            options=["Inicio", "Filtros", "Gráficos", "Mapa"],  # Cambié a "Gráficos" como una opción principal
+            icons=["house", "filter", "bar-chart-line"],  # Íconos para cada opción
+            menu_icon="cast",  # Ícono del menú
+            default_index=0,  # Página predeterminada
+            orientation="horizontal",  # Orientación horizontal
+            styles={
+                "container": {"padding": "0!important", "background-color": "#333"},
+                "icon": {"color": "orange", "font-size": "14px"}, # tamaño de icono
+                "nav-link": {
+                    "font-size": "18px", #tamaño letras
+                    "text-align": "center",
+                    "margin": "0px",
+                    "padding": "5px 10px",# tamaño de los botones
+                    "white-space": "nowrap",
+                    "--hover-color": "#444",
+                },
+                "nav-link-selected": {"background-color": "#1199EE"},
+            },
         )
-        
-        # Filtrar los sismos por el rango de profundidad
-        data = data[(data['PROFUNDIDAD'] >= profundidad_filtrada[0]) & 
-                    (data['PROFUNDIDAD'] <= profundidad_filtrada[1])]
-        
-        # Mostrar los datos filtrados por profundidad
-        st.write(f"Datos filtrados por profundidad entre {profundidad_filtrada[0]} y {profundidad_filtrada[1]} km:")
-        st.dataframe(data)
-    else:
-        st.error("La columna 'PROFUNDIDAD' no se encuentra en el archivo.")
-    
-    # Verificar si la columna 'MAGNITUD' existe y filtrar por magnitud
-    if 'MAGNITUD' in data.columns:
-        # Filtro de magnitud con un slider
-        magnitud_min = float(data['MAGNITUD'].min())
-        magnitud_max = float(data['MAGNITUD'].max())
-        
-        magnitud_filtrada = st.slider(
-            "Selecciona el rango de magnitud",
-            min_value=magnitud_min, max_value=magnitud_max,
-            value=(magnitud_min, magnitud_max),
-            step=0.1
-        )
-        
-        # Filtrar los sismos por el rango de magnitud
-        data = data[(data['MAGNITUD'] >= magnitud_filtrada[0]) & 
-                    (data['MAGNITUD'] <= magnitud_filtrada[1])]
-        
-        # Mostrar los datos filtrados por magnitud
-        st.write(f"Datos filtrados por magnitud entre {magnitud_filtrada[0]} y {magnitud_filtrada[1]}:")
-        st.dataframe(data)
-    else:
-        st.error("La columna 'MAGNITUD' no se encuentra en el archivo.")
-    
-    # Verificar si la columna 'LATITUD' existe y filtrar por latitud
-    if 'LATITUD' in data.columns:
-        data['LATITUD'] = pd.to_numeric(data['LATITUD'], errors='coerce')
-        # Filtro de latitud para Perú (-18 a 0)
-        latitud_min = -18.0
-        latitud_max = 0.0
-        
-        latitud_filtrada = st.slider(
-            "Selecciona el rango de latitud en Perú",
-            min_value=latitud_min, max_value=latitud_max,
-            value=(latitud_min, latitud_max),
-            step=0.1
-        )
-        
-        # Filtrar los sismos por el rango de latitud
-        data = data[(data['LATITUD'] >= latitud_filtrada[0]) & 
-                    (data['LATITUD'] <= latitud_filtrada[1])]
-        
-        # Mostrar los datos filtrados por latitud
-        st.write(f"Datos filtrados por latitud entre {latitud_filtrada[0]} y {latitud_filtrada[1]}:")
-        st.dataframe(data)
-    else:
-        st.error("La columna 'LATITUD' no se encuentra en el archivo.")
-    
-    # Extraer el año de la columna FECHA_UTC
-    data['AÑO'] = data['FECHA_UTC'].astype(str).str[:4]
-    
-    # Contar la cantidad de sismos por año
-    sismos_por_año = data['AÑO'].value_counts().sort_index()
-    
-    # Mostrar tabla de cantidad de sismos por año
-    st.write("Tabla de cantidad de sismos por año:")
-    st.write(sismos_por_año)
-    
-    # Crear un selectbox para elegir el tipo de gráfico
-    grafico_tipo = st.selectbox("Selecciona el tipo de gráfico", ("Gráfico de Barras", "Histograma", "Gráfico de Líneas"))
-    
-    # Configuración de diseño de gráfico
-    fig, ax = plt.subplots(figsize=(10, 6))
 
-    # Condicional para mostrar el gráfico seleccionado
-    if grafico_tipo == "Gráfico de Barras":
-        sismos_por_año.plot(kind='bar', ax=ax, color="#00A6FB", edgecolor="none")
-        ax.set_title("Cantidad de Sismos por Año (1960-2023) - Gráfico de Barras")
-    elif grafico_tipo == "Histograma":
-        sismos_por_año.plot(kind='hist', bins=30, ax=ax, color="#FF6B6B", edgecolor="none")
-        ax.set_title("Cantidad de Sismos por Año (1960-2023) - Histograma")
-    elif grafico_tipo == "Gráfico de Líneas":
-        sismos_por_año.plot(kind='line', ax=ax, color="#1FAB89", linewidth=2)
-        ax.set_title("Cantidad de Sismos por Año (1960-2023) - Gráfico de Líneas")
-    
-    # Configuración minimalista de etiquetas
-    ax.set_xlabel("Año", fontsize=10, color="#444444")
-    ax.set_ylabel("Cantidad de Sismos", fontsize=10, color="#444444")
-    ax.tick_params(axis='x', labelsize=8, rotation=90, colors="#666666")
-    ax.tick_params(axis='y', labelsize=8, colors="#666666")
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    ax.spines['left'].set_color("#DDDDDD")
-    ax.spines['bottom'].set_color("#DDDDDD")
-    ax.set_facecolor("white")
-    
-    # Mostrar el gráfico
-    st.pyplot(fig)
-    
-except Exception as e:
-    st.error(f"Error al cargar el archivo: {e}")
+# Lógica para navegar entre las páginas y submenú
+if selected == "Gráficos":
+    selected_graph = option_menu(
+        menu_title="Gráficos",  # Título del submenú
+        options=["Por Año", "Por Magnitud", "Por Profundidad"],  # Opciones del submenú
+        icons=["calendar", "bar-chart", "layers"],  # Íconos de submenú
+        menu_icon="cast",  # Ícono del submenú
+        default_index=0,  # Página predeterminada dentro del submenú
+        orientation="vertical",  # Orientación vertical
+        styles={
+            "container": {"padding": "0!important", "background-color": "#444"},
+            "icon": {"color": "orange", "font-size": "14px"},
+            "nav-link": {
+                "font-size": "14px",
+                "text-align": "center",
+                "margin": "0px",
+                "padding": "10px",
+                "--hover-color": "#555",
+            },
+            "nav-link-selected": {"background-color": "#1199EE"},
+        },
+    )
+
+    # Cargar la página seleccionada dentro del submenú
+    if selected_graph == "Por Año":
+        visualizacion_anos()
+    elif selected_graph == "Por Magnitud":
+        visualizacion_magnitud()
+    elif selected_graph == "Por Profundidad":
+        visualizacion_profundidad()
+
+elif selected == "Inicio":
+    home_page()
+elif selected == "Filtros":
+    filtrado_cantidad()
+
