@@ -10,7 +10,7 @@ from streamlit_folium import st_folium
 
 
 # Cargar dataset
-file_path = "PA_FINAL/Dataset_1960_2023_sismo.csv"
+file_path = "CÓDIGO/Dataset_1960_2023_sismo.csv"
 data = pd.read_csv(file_path)
 data['FECHA_UTC'] = pd.to_datetime(data['FECHA_UTC'], format='%Y%m%d', errors='coerce').dt.strftime('%Y-%m-%d')
 data['HORA_UTC'] = pd.to_datetime(data['HORA_UTC'], errors='coerce', format='%H%M%S').dt.time
@@ -220,13 +220,13 @@ def mapa():
     st.title("🌎 Mapa Interactivo de Sismos en Perú")
 
     # Cargar el archivo GeoJSON con los límites de los departamentos de Perú
-    departamentos = gpd.read_file('PA_FINAL/departamentos_perú.geojson')
+    departamentos = gpd.read_file('CÓDIGO/departamentos_perú.geojson')
     if departamentos.crs is None or departamentos.crs != "EPSG:4326":
         departamentos = departamentos.to_crs("EPSG:4326")
 
     
     # Cargar el dataset de los sismos
-    df = pd.read_csv('PA_FINAL/Dataset_1960_2023_sismo.csv')
+    df = pd.read_csv('CÓDIGO/Dataset_1960_2023_sismo.csv')
 
     
     # Crear nuevas columnas para Año, Mes (como texto) y Día
