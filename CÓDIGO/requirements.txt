@@ -4,5 +4,12 @@ openpyxl
 matplotlib
 folium
 streamlit-folium
+shapely
 plotly
-streamlit_option_menu
+geopy
+requests
+numpy
+seaborn
+scikit-learn
+python-dotenv
+arcgis
