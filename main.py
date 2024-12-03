@@ -302,33 +302,20 @@ def mapa():
     st.title("🌎 Mapa Interactivo de Sismos en Perú")
 
     # Cargar el archivo GeoJSON con los límites de los departamentos de Perú
-    departamentos = gpd.read_file('departamentos_perú.geojson')
+    departamentos = gpd.read_file('PA_FINAL/departamentos_perú.geojson')
     if departamentos.crs is None or departamentos.crs != "EPSG:4326":
         departamentos = departamentos.to_crs("EPSG:4326")
 
     
     # Cargar el dataset de los sismos
-    df = pd.read_csv('Dataset_1960_2023_sismo.csv')
+    df = pd.read_csv('PA_FINAL/Dataset_1960_2023_sismo.csv')
 
     
     # Crear nuevas columnas para Año, Mes (como texto) y Día
     #df['FECHA_UTC'] = pd.to_datetime(df['FECHA_UTC'], format='%Y-%m-%d')
     df['FECHA_UTC'] = pd.to_datetime(df['FECHA_UTC'], format='%Y%m%d')
     df['AÑO'] = df['FECHA_UTC'].dt.year
-    # Convert to datetime
-    # df['FECHA_UTC'] = pd.to_datetime(df['FECHA_UTC'])
-    
-    # Define a dictionary for month names in Spanish
-    month_names = {
-        1: "enero", 2: "febrero", 3: "marzo", 4: "abril",
-        5: "mayo", 6: "junio", 7: "julio", 8: "agosto",
-        9: "septiembre", 10: "octubre", 11: "noviembre", 12: "diciembre"
-    }
-    
-    # Map the month numbers to their names
-    df['MES'] = df['FECHA_UTC'].dt.month.map(month_names)
-    # df['MES'] = df['FECHA_UTC'].dt.month_name(locale="es_ES")  # Nombres de meses en español
-    
+    df['MES'] = df['FECHA_UTC'].dt.month_name(locale="es_ES")  # Nombres de meses en español
     df['DIA'] = df['FECHA_UTC'].dt.day
 
     # Crear geometrías de puntos a partir de LONGITUD y LATITUD
@@ -346,7 +333,7 @@ def mapa():
         st.markdown("### Filtros de Selección")
         
         # Filtro por departamento (con opción de seleccionar múltiples)
-        filtro_departamento = st.multiselect("Selecciona un o más departamentos", options=["Todos"] + departamentos['NOMBDEP'].unique().tolist(), default=["Todos"])
+        filtro_departamento = st.multiselect("Selecciona un o más departamentos", options=["Todos"] + departamentos['NOMBDEP'].unique().tolist())
         
         # Filtro por rango de años y año único
         filtro_año_unico = st.selectbox("Selecciona un año", options=["Todos"] + sorted(df['AÑO'].unique().tolist()), index=0)
@@ -403,7 +390,12 @@ def mapa():
     folium.GeoJson(
         departamentos,
         name="DEPARTAMENTO",
-        style_function=estilo_departamento
+        style_function=estilo_departamento,
+        tooltip=folium.GeoJsonTooltip(
+            fields=["NOMBDEP"],
+            aliases=["Departamento: "],
+            localize=True
+        )
     ).add_to(mapa_peru)
 
     # **Agregar esta condición para verificar si hay filtros seleccionados**
@@ -419,6 +411,7 @@ def mapa():
                     fill_color="red",
                     fill_opacity=0.7,
                     popup=f"Departamento: {row['NOMBDEP']}<br>Año: {row['AÑO']}<br>Mes: {row['MES']}<br>Día: {row['DIA']}<br>Magnitud: {row['MAGNITUD']}<br>Profundidad: {row['PROFUNDIDAD']} km",
+                
                 ).add_to(mapa_peru)
 
     # Mostrar el mapa interactivo en la columna izquierda
@@ -445,6 +438,7 @@ def mapa():
         st.pyplot(fig)
     else:
         st.write("No hay datos que coincidan con los filtros seleccionados.")
+
 
 def conclusion():
     st.markdown(""" 
