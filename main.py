@@ -38,7 +38,7 @@ def home_page():
     En esta aplicación, puedes explorar datos sísmicos registrados desde 1960 hasta 2023. Usa las opciones del menú para visualizar mapas, gráficos y aplicar filtros personalizados según tus intereses.
     """)
     img = Image.open("img/sismoportada.jpeg")
-    img = img.resize((500, 600))  # Ajusta el valor de la altura según lo necesario
+    img = img.resize((250, 300))  # Ajusta el valor de la altura según lo necesario
     # Mostrar la imagen redimensionada
     st.image(img)
     st.markdown("https://sinia.minam.gob.pe/sites/default/files/sial-sialtrujillo/archivos/public/docs/328.pdf")
@@ -291,6 +291,7 @@ def visualizacion_profundidad(tipo):
             st.write(f"Cantidad de sismos : {cantidad}")
 
 # MENU
+# Función mapa
 def mapa():
     # Configuración de la página
     """
@@ -311,9 +312,23 @@ def mapa():
 
     
     # Crear nuevas columnas para Año, Mes (como texto) y Día
+    #df['FECHA_UTC'] = pd.to_datetime(df['FECHA_UTC'], format='%Y-%m-%d')
     df['FECHA_UTC'] = pd.to_datetime(df['FECHA_UTC'], format='%Y%m%d')
     df['AÑO'] = df['FECHA_UTC'].dt.year
-    df['MES'] = df['FECHA_UTC'].dt.month_name(locale="es_ES")  # Nombres de meses en español
+    # Convert to datetime
+    # df['FECHA_UTC'] = pd.to_datetime(df['FECHA_UTC'])
+    
+    # Define a dictionary for month names in Spanish
+    month_names = {
+        1: "enero", 2: "febrero", 3: "marzo", 4: "abril",
+        5: "mayo", 6: "junio", 7: "julio", 8: "agosto",
+        9: "septiembre", 10: "octubre", 11: "noviembre", 12: "diciembre"
+    }
+    
+    # Map the month numbers to their names
+    df['MES'] = df['FECHA_UTC'].dt.month.map(month_names)
+    # df['MES'] = df['FECHA_UTC'].dt.month_name(locale="es_ES")  # Nombres de meses en español
+    
     df['DIA'] = df['FECHA_UTC'].dt.day
 
     # Crear geometrías de puntos a partir de LONGITUD y LATITUD
@@ -379,8 +394,6 @@ def mapa():
     # Crear un mapa centrado en Perú
     mapa_peru = folium.Map(location=[-9.19, -73.015], zoom_start=6)
 
-
-
     # Agregar los límites de los departamentos al mapa
     def estilo_departamento(feature):
         if feature['properties']['NOMBDEP'] in filtro_departamento or "Todos" in filtro_departamento:
@@ -390,12 +403,7 @@ def mapa():
     folium.GeoJson(
         departamentos,
         name="DEPARTAMENTO",
-        style_function=estilo_departamento,
-        tooltip=folium.GeoJsonTooltip(
-            fields=["NOMBDEP"],
-            aliases=["Departamento: "],
-            localize=True
-        )
+        style_function=estilo_departamento
     ).add_to(mapa_peru)
 
     # **Agregar esta condición para verificar si hay filtros seleccionados**
@@ -411,7 +419,6 @@ def mapa():
                     fill_color="red",
                     fill_opacity=0.7,
                     popup=f"Departamento: {row['NOMBDEP']}<br>Año: {row['AÑO']}<br>Mes: {row['MES']}<br>Día: {row['DIA']}<br>Magnitud: {row['MAGNITUD']}<br>Profundidad: {row['PROFUNDIDAD']} km",
-                
                 ).add_to(mapa_peru)
 
     # Mostrar el mapa interactivo en la columna izquierda
@@ -438,7 +445,6 @@ def mapa():
         st.pyplot(fig)
     else:
         st.write("No hay datos que coincidan con los filtros seleccionados.")
-
 
 def conclusion():
     st.markdown(""" 
