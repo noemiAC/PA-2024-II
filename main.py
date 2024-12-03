@@ -291,7 +291,6 @@ def visualizacion_profundidad(tipo):
             st.write(f"Cantidad de sismos : {cantidad}")
 
 # MENU
-# Función mapa
 def mapa():
     # Configuración de la página
     """
@@ -312,7 +311,6 @@ def mapa():
 
     
     # Crear nuevas columnas para Año, Mes (como texto) y Día
-    #df['FECHA_UTC'] = pd.to_datetime(df['FECHA_UTC'], format='%Y-%m-%d')
     df['FECHA_UTC'] = pd.to_datetime(df['FECHA_UTC'], format='%Y%m%d')
     df['AÑO'] = df['FECHA_UTC'].dt.year
     df['MES'] = df['FECHA_UTC'].dt.month_name(locale="es_ES")  # Nombres de meses en español
@@ -333,7 +331,7 @@ def mapa():
         st.markdown("### Filtros de Selección")
         
         # Filtro por departamento (con opción de seleccionar múltiples)
-        filtro_departamento = st.multiselect("Selecciona un o más departamentos", options=["Todos"] + departamentos['NOMBDEP'].unique().tolist())
+        filtro_departamento = st.multiselect("Selecciona un o más departamentos", options=["Todos"] + departamentos['NOMBDEP'].unique().tolist(), default=["Todos"])
         
         # Filtro por rango de años y año único
         filtro_año_unico = st.selectbox("Selecciona un año", options=["Todos"] + sorted(df['AÑO'].unique().tolist()), index=0)
@@ -380,6 +378,8 @@ def mapa():
 
     # Crear un mapa centrado en Perú
     mapa_peru = folium.Map(location=[-9.19, -73.015], zoom_start=6)
+
+
 
     # Agregar los límites de los departamentos al mapa
     def estilo_departamento(feature):
