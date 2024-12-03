@@ -19,7 +19,7 @@ data['HORA_UTC'] = pd.to_datetime(data['HORA_UTC'], errors='coerce', format='%H%
 # Funciones de las páginas
 def home_page():
     st.title("Catálogo Sísmico 1960 - 2023")
-st.markdown("<h1 style='color:blue; text-align:center;'>BIENVENIDO A LA APLICACIÓN DE ANÁLISIS DE SISMOS</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='color:blue; text-align:center;'>BIENVENIDO A LA APLICACIÓN DE ANÁLISIS DE SISMOS</h1>", unsafe_allow_html=True)
 
     # Introducción al tema
     st.markdown("""
