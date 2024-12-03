@@ -38,7 +38,7 @@ def home_page():
     En esta aplicación, puedes explorar datos sísmicos registrados desde 1960 hasta 2023. Usa las opciones del menú para visualizar mapas, gráficos y aplicar filtros personalizados según tus intereses.
     """)
     img = Image.open("img/sismoportada.jpeg")
-    img = img.resize((500, 500))  # Ajusta el valor de la altura según lo necesario
+    img = img.resize((500, 800))  # Ajusta el valor de la altura según lo necesario
     # Mostrar la imagen redimensionada
     st.image(img)
     st.markdown("https://sinia.minam.gob.pe/sites/default/files/sial-sialtrujillo/archivos/public/docs/328.pdf")
